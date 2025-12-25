@@ -3,6 +3,7 @@ import { Camera, X, Save, Send, History, Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { TransportTicket, RouteConfig } from '../../types';
 import { format } from 'date-fns';
+import { compressImage } from '../../utils/imageUtils';
 
 interface CreateTicketMobileProps {
     tickets: TransportTicket[];
@@ -94,18 +95,21 @@ export const CreateTicketMobile: React.FC<CreateTicketMobileProps> = ({
         }
     }, [formData.dateStart, formData.dateEnd]);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            try {
+                // Compress image before setting state
+                const compressedBase64 = await compressImage(file);
                 setFormData(prev => ({
                     ...prev,
-                    containerImage: file,
-                    containerImagePreview: reader.result as string
+                    containerImage: file, // Keep original file object reference (legacy)
+                    containerImagePreview: compressedBase64 // Use compressed base64 for preview AND payload
                 }));
-            };
-            reader.readAsDataURL(file);
+            } catch (error) {
+                console.error("Compression failed", error);
+                alert("Lỗi xử lý ảnh. Vui lòng thử lại.");
+            }
         }
     };
 

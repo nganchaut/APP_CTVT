@@ -6,6 +6,7 @@ export const LoginPage = () => {
     const { login } = useAuth();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [remember, setRemember] = useState(true);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -15,7 +16,7 @@ export const LoginPage = () => {
         setIsLoading(true);
 
         try {
-            const success = await login(username, password);
+            const success = await login(username, password, remember);
             if (!success) {
                 setError('Tên đăng nhập hoặc mật khẩu không đúng');
             }
@@ -85,6 +86,20 @@ export const LoginPage = () => {
                                 <span>{error}</span>
                             </div>
                         )}
+
+                        <div className="flex items-center">
+                            <input
+                                id="remember-me"
+                                name="remember-me"
+                                type="checkbox"
+                                checked={remember}
+                                onChange={(e) => setRemember(e.target.checked)}
+                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded cursor-pointer"
+                            />
+                            <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-700 cursor-pointer select-none">
+                                Ghi nhớ đăng nhập
+                            </label>
+                        </div>
 
                         <button
                             type="submit"

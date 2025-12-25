@@ -11,7 +11,7 @@ export interface User {
 
 interface AuthContextType {
     user: User | null;
-    login: (username: string, password: string) => Promise<boolean>;
+    login: (username: string, password: string, remember: boolean) => Promise<boolean>;
     logout: () => void;
     isAuthenticated: boolean;
 }
@@ -35,53 +35,54 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Check for persisted session on load
     useEffect(() => {
-        const savedUser = localStorage.getItem('danalog_user');
+        const savedUser = localStorage.getItem('danalog_user') || sessionStorage.getItem('danalog_user');
         if (savedUser) {
             try {
                 setUser(JSON.parse(savedUser));
             } catch (e) {
-                console.error("Failed to parse user from local storage");
+                console.error("Failed to parse user from storage");
                 localStorage.removeItem('danalog_user');
+                sessionStorage.removeItem('danalog_user');
             }
         }
     }, []);
 
-    const login = async (username: string, password: string): Promise<boolean> => {
+    const login = async (username: string, password: string, remember: boolean): Promise<boolean> => {
         // MOCK AUTHENTICATION
         // In a real app, this would be an API call
         await new Promise(resolve => setTimeout(resolve, 500)); // Simulate delay
 
+        let authenticatedUser: User | null = null;
+
         if (username === 'admin' && password === 'admin123') {
-            const adminUser: User = { username: 'admin', role: 'ADMIN', name: 'Administrator' };
-            setUser(adminUser);
-            localStorage.setItem('danalog_user', JSON.stringify(adminUser));
-            return true;
+            authenticatedUser = { username: 'admin', role: 'ADMIN', name: 'Administrator' };
+        } else if (username === 'cs_user' && password === 'password123') {
+            authenticatedUser = { username: 'cs_user', role: 'CS', name: 'CS Staff' };
+        } else {
+            // SUPPORT DRIVER PATTERN: e.g. tiennd
+            const driverPatterns = ['tiennd', 'anhnv', 'thanhnv', 'driver_user'];
+            if (driverPatterns.includes(username) && password === 'driver123') {
+                const nameMap: Record<string, string> = {
+                    'tiennd': 'Nguyễn Đức Tiên',
+                    'anhnv': 'Nguyễn Văn Anh',
+                    'thanhnv': 'Nguyễn Văn Thành',
+                    'driver_user': 'Người lái xe'
+                };
+                authenticatedUser = {
+                    username: username,
+                    role: 'DRIVER',
+                    name: nameMap[username] || 'Nguyễn Văn A'
+                };
+            }
         }
 
-        if (username === 'cs_user' && password === 'password123') {
-            const csUser: User = { username: 'cs_user', role: 'CS', name: 'CS Staff' };
-            setUser(csUser);
-            localStorage.setItem('danalog_user', JSON.stringify(csUser));
-            return true;
-        }
-
-        // SUPPORT DRIVER PATTERN: e.g. tiennd
-        // Simple regex check: alphanumeric, 4+ chars? Or just whitelist common ones for demo
-        const driverPatterns = ['tiennd', 'anhnv', 'thanhnv', 'driver_user'];
-        if (driverPatterns.includes(username) && password === 'driver123') {
-            const nameMap: Record<string, string> = {
-                'tiennd': 'Nguyễn Đức Tiên',
-                'anhnv': 'Nguyễn Văn Anh',
-                'thanhnv': 'Nguyễn Văn Thành',
-                'driver_user': 'Người lái xe'
-            };
-            const driverUser: User = {
-                username: username,
-                role: 'DRIVER',
-                name: nameMap[username] || 'Nguyễn Văn A'
-            };
-            setUser(driverUser);
-            localStorage.setItem('danalog_user', JSON.stringify(driverUser));
+        if (authenticatedUser) {
+            setUser(authenticatedUser);
+            if (remember) {
+                localStorage.setItem('danalog_user', JSON.stringify(authenticatedUser));
+            } else {
+                sessionStorage.setItem('danalog_user', JSON.stringify(authenticatedUser));
+            }
             return true;
         }
 
@@ -91,6 +92,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const logout = () => {
         setUser(null);
         localStorage.removeItem('danalog_user');
+        sessionStorage.removeItem('danalog_user');
     };
 
     return (
