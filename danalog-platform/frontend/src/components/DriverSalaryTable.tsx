@@ -193,20 +193,36 @@ export function DriverSalaryTable({ tickets, routeConfigs, onNotifySalary }: Dri
 
             salarySheets.forEach(sheet => {
                 // Find License Plate from tickets
-                const drTicket = tickets.find(t => t.driverName === sheet.driverName && t.licensePlate);
-                const plate = drTicket ? drTicket.licensePlate : '...';
+                // Prioritize finding a ticket with a not-empty license plate
+                const drTicket = tickets.find(t => t.driverName === sheet.driverName && t.licensePlate && t.licensePlate.trim() !== '');
+                const plate = drTicket ? drTicket.licensePlate : '';
 
-                // Prepare Data for Sheet
                 // Header Information
-                // Prepare Data for Sheet
-                // Header Information
-                const headerRows = [
-                    ['BẢNG TỔNG HỢP THANH TOÁN LƯƠNG'],
-                    [`Kỳ thanh toán: ${sheet.month}/${sheet.year}`],
-                    [`Họ và tên: ${sheet.driverName}`, '', '', '', `Biển kiểm soát: ${plate}`],
-                    ['', '', '', '', '', '', ''], // Spacer
-                    ['', '', '', '', '', '', '']  // Extra Spacer
+                // Note: Standard 'xlsx' may allow 's' (style) on some builds, or we define it for compatibility.
+                const centerStyle = { alignment: { horizontal: 'center', vertical: 'center' }, font: { bold: true } };
+
+                // Row 1: Title (Merged A1:H1) - Centered
+                const row1 = [
+                    { v: 'BẢNG TỔNG HỢP THANH TOÁN LƯƠNG', t: 's', s: centerStyle },
+                    '', '', '', '', '', '', ''
                 ];
+
+                // Row 2: Period (Merged A2:H2) - Centered
+                const row2 = [
+                    { v: `Kỳ thanh toán: ${sheet.month}/${sheet.year}`, t: 's', s: centerStyle },
+                    '', '', '', '', '', '', ''
+                ];
+
+                // Row 3: Name (Merged A3:D3) & Plate (Merged E3:H3)
+                // User requested "Họ và tên canh giữa" (Name centered).
+                const row3 = [
+                    { v: `Họ và tên: ${sheet.driverName}`, t: 's', s: centerStyle },
+                    '', '', '',
+                    { v: `Biển kiểm soát: ${plate}`, t: 's', s: centerStyle },
+                    '', '', ''
+                ];
+
+                const headerRows = [row1, row2, row3, ['', '', '', '', '', '', ''], ['', '', '', '', '', '', '']];
 
                 // Table Data
                 const tableData = sheet.items.map((item, index) => ({
