@@ -192,10 +192,15 @@ export function DriverSalaryTable({ tickets, routeConfigs, onNotifySalary }: Dri
             const wb = XLSX.utils.book_new();
 
             salarySheets.forEach(sheet => {
-                // Find License Plate from tickets
-                // Prioritize finding a ticket with a not-empty license plate
-                const drTicket = tickets.find(t => t.driverName === sheet.driverName && t.licensePlate && t.licensePlate.trim() !== '');
-                const plate = drTicket ? drTicket.licensePlate : '';
+                // Find ALL License Plates from tickets for this driver
+                const driverPlates = tickets
+                    .filter(t => t.driverName === sheet.driverName && t.licensePlate && t.licensePlate.trim() !== '')
+                    .map(t => t.licensePlate?.trim())
+                    .filter((plate): plate is string => !!plate);
+
+                // Deduplicate plates
+                const uniquePlates = Array.from(new Set(driverPlates));
+                const plate = uniquePlates.length > 0 ? uniquePlates.join(', ') : '';
 
                 // Header Information
                 // Note: Standard 'xlsx' may allow 's' (style) on some builds, or we define it for compatibility.

@@ -6,13 +6,22 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 const DB_FILE = path.join(__dirname, 'db.json');
 const DATA_DIR = path.join(__dirname, 'src', 'data');
 const SEED_FILE = path.join(DATA_DIR, 'seedTickets.json');
 
 app.use(cors());
 app.use(bodyParser.json());
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, 'dist')));
+
+app.get('/', (req, res) => {
+    res.send('Backend Server is Running correctly!');
+});
+
+// ... (API Routes helper functions)
 
 // Helper to read DB
 function readDb() {
@@ -84,6 +93,12 @@ app.put('/api/tickets/:id', (req, res) => {
         console.error("Error updating DB:", err);
         res.status(500).json({ error: 'Failed to update ticket' });
     }
+});
+
+// The "catch-all" handler: for any request that doesn't
+// match one above, send back React's index.html file.
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 app.listen(PORT, () => {

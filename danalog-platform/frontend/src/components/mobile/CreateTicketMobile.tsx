@@ -22,8 +22,13 @@ export const CreateTicketMobile: React.FC<CreateTicketMobileProps> = ({
     const { user } = useAuth();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Get last plate from the most recent ticket of this user
-    const lastPlate = tickets.find(t => t.createdBy === user?.username || t.driverName === user?.name)?.licensePlate || '';
+    // Get all unique plates from previous tickets of this user
+    const uniquePlates = Array.from(new Set(
+        tickets
+            .filter(t => t.createdBy === user?.username || t.driverName === user?.name)
+            .map(t => t.licensePlate)
+            .filter((p): p is string => !!p) // Filter out empty/null
+    ));
 
     // Form State
     const [formData, setFormData] = useState({
@@ -256,13 +261,24 @@ export const CreateTicketMobile: React.FC<CreateTicketMobileProps> = ({
                             onChange={e => setFormData({ ...formData, licensePlate: e.target.value.toUpperCase() })}
                             className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold tracking-wider focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                         />
-                        {lastPlate && !formData.licensePlate && !ticketToEdit && (
-                            <div
-                                onClick={() => setFormData(prev => ({ ...prev, licensePlate: lastPlate }))}
-                                className="flex items-center gap-2 px-3 py-2 mt-2 bg-blue-50 text-blue-700 rounded-xl cursor-pointer active:scale-95 transition-all w-fit"
-                            >
-                                <History size={16} />
-                                <span className="text-xs font-bold">Dùng biển số cũ: {lastPlate}</span>
+                        {uniquePlates.length > 0 && !formData.licensePlate && !ticketToEdit && (
+                            <div className="mt-3">
+                                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 mb-2">
+                                    <History size={14} />
+                                    <span>Lịch sử biển số:</span>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {uniquePlates.map(plate => (
+                                        <button
+                                            key={plate}
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, licensePlate: plate }))}
+                                            className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold border border-blue-100 active:scale-95 transition-all hover:bg-blue-100"
+                                        >
+                                            {plate}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>
