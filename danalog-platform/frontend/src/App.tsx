@@ -15,7 +15,18 @@ import { MobileDriverDashboard } from './components/mobile/MobileDriverDashboard
 type TabType = 'dashboard' | 'cs_check' | 'revenue_driver' | 'revenue_customer' | 'salary' | 'route_config' | 'settings';
 
 function AppContent() {
-    const { user, logout, isAuthenticated } = useAuth();
+    const { user, logout, isAuthenticated, isLoading } = useAuth();
+
+    // Show splash screen while checking auth
+    if (isLoading) {
+        return (
+            <div className="h-screen w-screen bg-slate-900 flex flex-col items-center justify-center text-white">
+                <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p className="text-slate-400 font-medium animate-pulse">Đang tải...</p>
+            </div>
+        );
+    }
+
     // Default tab based on role
     const getInitialTab = (): TabType => {
         return 'cs_check';

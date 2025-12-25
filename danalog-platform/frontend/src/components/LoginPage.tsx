@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Truck, Lock, User, AlertCircle, ArrowRight, Loader2 } from 'lucide-react';
 
@@ -10,6 +10,14 @@ export const LoginPage = () => {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+    // Pre-fill username from previous login
+    useEffect(() => {
+        const lastUser = localStorage.getItem('danalog_last_username');
+        if (lastUser) {
+            setUsername(lastUser);
+        }
+    }, []);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
@@ -17,10 +25,12 @@ export const LoginPage = () => {
 
         try {
             const success = await login(username, password, remember);
-            if (!success) {
+            if (success) {
+                // Save username for next time regardless of "remember me" flag
+                localStorage.setItem('danalog_last_username', username);
+            } else {
                 setError('Tên đăng nhập hoặc mật khẩu không đúng');
             }
-            // Navigation is handled by App.tsx observing auth state
         } catch (err) {
             setError('Đã có lỗi xảy ra. Vui lòng thử lại.');
         } finally {
