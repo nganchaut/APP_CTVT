@@ -45,11 +45,18 @@ function AppContent() {
     // Fetch tickets on mount
     useEffect(() => {
         const fetchTickets = async () => {
-            const data = await api.getTickets();
-            if (data && data.length > 0) {
-                setTickets(data);
-            } else {
-                setTickets(MOCK_TICKETS); // Fallback if API fails or empty
+            try {
+                const data = await api.getTickets();
+                // If data is array, use it (even if empty). Do NOT fallback to MOCK if empty.
+                if (Array.isArray(data)) {
+                    setTickets(data);
+                } else {
+                    setTickets([]);
+                }
+            } catch (error) {
+                console.error("Failed to fetch tickets", error);
+                // Only on explicit error might we consider mock, or just show empty with error
+                setTickets([]);
             }
         };
         fetchTickets();
