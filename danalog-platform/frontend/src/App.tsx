@@ -83,23 +83,24 @@ function AppContent() {
     }
 
     // Role-based Layout Switching: STRICT ISOLATION
+
+    const handleUpdateTickets = async (updatedTickets: any[]) => {
+        setTickets(updatedTickets);
+        await api.saveTickets(updatedTickets);
+    };
+
     if (user?.role === 'DRIVER') {
         return (
             <div className="bg-slate-900 min-h-screen flex justify-center">
                 <MobileDriverDashboard
                     tickets={tickets}
-                    onUpdateTickets={setTickets}
+                    onUpdateTickets={handleUpdateTickets}
                     routeConfigs={routeConfigs}
                     notifications={notifications}
                 />
             </div>
         );
     }
-
-    const handleUpdateTickets = async (updatedTickets: any[]) => {
-        setTickets(updatedTickets);
-        await api.saveTickets(updatedTickets);
-    };
 
     const handleNotifySalary = (driverUsername: string) => {
         handleNotifyDriver(driverUsername, 'Phiếu lương của bạn đã được phê duyệt và gửi đi.');
