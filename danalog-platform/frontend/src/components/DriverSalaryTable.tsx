@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { TransportTicket, RouteConfig } from '../types';
-import * as XLSX from 'xlsx';
+import XLSX from 'xlsx-js-style';
 import { Calendar, Bell, ChevronRight, Search, FileSpreadsheet, User } from 'lucide-react';
 
 interface DriverSalaryTableProps {
