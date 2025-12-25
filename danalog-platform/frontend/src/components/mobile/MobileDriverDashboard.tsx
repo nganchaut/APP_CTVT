@@ -10,6 +10,7 @@ type DriverTab = 'create' | 'history' | 'salary';
 interface MobileDriverDashboardProps {
     tickets: any[];
     onUpdateTickets: (tickets: any[]) => void;
+    onCreateTicket?: (ticket: any) => Promise<void>;
     routeConfigs: any[];
     notifications: any[];
 }
@@ -17,6 +18,7 @@ interface MobileDriverDashboardProps {
 export const MobileDriverDashboard: React.FC<MobileDriverDashboardProps> = ({
     tickets,
     onUpdateTickets,
+    onCreateTicket,
     routeConfigs,
     notifications
 }) => {
@@ -28,7 +30,7 @@ export const MobileDriverDashboard: React.FC<MobileDriverDashboardProps> = ({
     const renderContent = () => {
         switch (activeTab) {
             case 'create':
-                return <CreateTicketMobile tickets={tickets} onUpdateTickets={onUpdateTickets} routeConfigs={routeConfigs} onComplete={() => setActiveTab('history')} />;
+                return <CreateTicketMobile tickets={tickets} onUpdateTickets={onUpdateTickets} onCreateTicket={onCreateTicket} routeConfigs={routeConfigs} onComplete={() => setActiveTab('history')} />;
             case 'history':
                 return <TicketListMobile tickets={tickets} onUpdateTickets={onUpdateTickets} routeConfigs={routeConfigs} onCreateNew={() => setActiveTab('create')} />;
             case 'salary':

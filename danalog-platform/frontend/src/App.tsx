@@ -89,12 +89,25 @@ function AppContent() {
         await api.saveTickets(updatedTickets);
     };
 
+    const handleCreateTicket = async (newTicket: any) => {
+        // Optimistic update
+        setTickets(prev => [newTicket, ...prev]);
+        try {
+            await api.createTicket(newTicket);
+        } catch (error) {
+            console.error("Failed to create ticket", error);
+            // Rollback if needed, but for MVP keep it simple or show alert
+            alert("Lỗi lưu phiếu. Vui lòng kiểm tra kết nối mạng.");
+        }
+    };
+
     if (user?.role === 'DRIVER') {
         return (
             <div className="bg-slate-900 min-h-screen flex justify-center">
                 <MobileDriverDashboard
                     tickets={tickets}
                     onUpdateTickets={handleUpdateTickets}
+                    onCreateTicket={handleCreateTicket}
                     routeConfigs={routeConfigs}
                     notifications={notifications}
                 />

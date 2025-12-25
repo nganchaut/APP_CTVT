@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Camera, X, Save, Send, History } from 'lucide-react';
+import { Camera, X, Save, Send, History, Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { TransportTicket, RouteConfig } from '../../types';
 import { format } from 'date-fns';
@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 interface CreateTicketMobileProps {
     tickets: TransportTicket[];
     onUpdateTickets: (tickets: any[]) => void;
+    onCreateTicket?: (ticket: any) => Promise<void>;
     routeConfigs: RouteConfig[];
     onComplete: () => void;
     ticketToEdit?: TransportTicket | null;
@@ -15,12 +16,14 @@ interface CreateTicketMobileProps {
 export const CreateTicketMobile: React.FC<CreateTicketMobileProps> = ({
     tickets,
     onUpdateTickets,
+    onCreateTicket,
     routeConfigs,
     onComplete,
     ticketToEdit
 }) => {
     const { user } = useAuth();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Get all unique plates from previous tickets of this user
     const uniquePlates = Array.from(new Set(
@@ -173,7 +176,7 @@ export const CreateTicketMobile: React.FC<CreateTicketMobileProps> = ({
                 ...ticketToEdit,
                 ...formData,
                 status,
-                revenue: calculatedRevenue || ticketToEdit.revenue, // Update if calculated, else keep old (or likely 0 if new logic)
+                revenue: calculatedRevenue || ticketToEdit.revenue,
                 driverSalary: calculatedSalary || ticketToEdit.driverSalary,
                 imageUrl: formData.containerImagePreview || ticketToEdit.imageUrl,
                 containerImage: formData.containerImage ? formData.containerImage.name : ticketToEdit.containerImage,
@@ -188,6 +191,8 @@ export const CreateTicketMobile: React.FC<CreateTicketMobileProps> = ({
                 ]
             };
             onUpdateTickets(tickets.map(t => t.id === ticketToEdit.id ? updatedTicket : t));
+            alert('Cập nhật thành công');
+            onComplete();
         } else {
             const newTicket: TransportTicket = {
                 id: `T-${Date.now()}`,
@@ -209,11 +214,31 @@ export const CreateTicketMobile: React.FC<CreateTicketMobileProps> = ({
                     }
                 ]
             };
-            onUpdateTickets([newTicket, ...tickets]);
-        }
 
-        alert(status === 'DRAFT' ? 'Đã lưu bản nháp' : 'Đã gửi phiếu thành công');
-        onComplete();
+            setIsSubmitting(true);
+
+            // Prefer optimized single-create if available
+            if (onCreateTicket) {
+                onCreateTicket(newTicket)
+                    .then(() => {
+                        alert(status === 'DRAFT' ? 'Đã lưu bản nháp' : 'Đã gửi phiếu thành công');
+                        onComplete();
+                    })
+                    .catch(() => {
+                        alert('Có lỗi xảy ra khi lưu phiếu. Vui lòng thử lại.');
+                        setIsSubmitting(false);
+                    });
+            } else {
+                // Fallback to bulk update
+                try {
+                    onUpdateTickets([newTicket, ...tickets]);
+                    alert(status === 'DRAFT' ? 'Đã lưu bản nháp' : 'Đã gửi phiếu thành công');
+                    onComplete();
+                } catch (e) {
+                    setIsSubmitting(false);
+                }
+            }
+        }
     };
 
     return (
@@ -493,17 +518,19 @@ export const CreateTicketMobile: React.FC<CreateTicketMobileProps> = ({
             <div className="flex flex-col gap-3 pt-2 pb-8">
                 <button
                     onClick={() => handleSubmit('PENDING')}
-                    className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-xl shadow-blue-200 flex items-center justify-center gap-2 active:scale-95 transition-all text-base uppercase tracking-wider"
+                    disabled={isSubmitting}
+                    className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-xl shadow-blue-200 flex items-center justify-center gap-2 active:scale-95 transition-all text-base uppercase tracking-wider disabled:opacity-50"
                 >
-                    <Send size={20} />
+                    {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
                     GỬI PHIẾU NGAY
                 </button>
                 <div className="grid grid-cols-2 gap-3">
                     <button
                         onClick={() => handleSubmit('DRAFT')}
-                        className="w-full bg-white text-slate-600 font-bold py-3.5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center gap-2 active:bg-slate-50 transition-all text-sm uppercase"
+                        disabled={isSubmitting}
+                        className="w-full bg-white text-slate-600 font-bold py-3.5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center gap-2 active:bg-slate-50 transition-all text-sm uppercase disabled:opacity-50"
                     >
-                        <Save size={18} />
+                        {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                         LƯU NHÁP
                     </button>
                     <button
