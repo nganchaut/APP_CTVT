@@ -62,9 +62,9 @@ export const TicketListMobile: React.FC<TicketListMobileProps> = ({ tickets = []
             }
             return true;
         }).sort((a, b) => {
-            const dateA = new Date(a.dateEnd || a.dateStart).getTime();
-            const dateB = new Date(b.dateEnd || b.dateStart).getTime();
-            return dateB - dateA;
+            // Sort by Creation Time (Newest First)
+            // Assumes ID "T-{timestamp}"
+            return b.id.localeCompare(a.id);
         });
     }, [tickets, user, filterStatus, filterTime, selectedMonth, dateRange]);
 

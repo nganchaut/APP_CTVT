@@ -62,9 +62,11 @@ export function TicketList({ tickets, onUpdateTickets, routeConfigs, currentUser
 
             return true;
         }).sort((a, b) => {
-            const dateA = new Date(a.dateEnd || a.dateStart).getTime();
-            const dateB = new Date(b.dateEnd || b.dateStart).getTime();
-            return dateB - dateA;
+            // Sort by Creaton Time (ID is T-{timestamp})
+            // Lexicographical sort works for fixed length, but ID is string.
+            // Since ID format is T-TIMESTAMP, straight string comparison works if timestamp length is same.
+            // Better to match robustly or just string compare if consistent.
+            return b.id.localeCompare(a.id);
         });
     }, [tickets, filters]);
 
