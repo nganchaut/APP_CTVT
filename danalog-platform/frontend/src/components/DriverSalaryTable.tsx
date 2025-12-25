@@ -198,11 +198,14 @@ export function DriverSalaryTable({ tickets, routeConfigs, onNotifySalary }: Dri
 
                 // Prepare Data for Sheet
                 // Header Information
+                // Prepare Data for Sheet
+                // Header Information
                 const headerRows = [
                     ['BẢNG TỔNG HỢP THANH TOÁN LƯƠNG'],
                     [`Kỳ thanh toán: ${sheet.month}/${sheet.year}`],
                     [`Họ và tên: ${sheet.driverName}`, '', '', '', `Biển kiểm soát: ${plate}`],
-                    ['', '', '', '', '', '', ''] // Spacer
+                    ['', '', '', '', '', '', ''], // Spacer
+                    ['', '', '', '', '', '', '']  // Extra Spacer
                 ];
 
                 // Table Data
@@ -227,9 +230,23 @@ export function DriverSalaryTable({ tickets, routeConfigs, onNotifySalary }: Dri
                 };
 
                 const ws = XLSX.utils.json_to_sheet([]);
+
+                // Add Headers
                 XLSX.utils.sheet_add_aoa(ws, headerRows, { origin: 'A1' });
+
+                // Add Data starting at A6
                 XLSX.utils.sheet_add_json(ws, tableData, { origin: 'A6' });
+
+                // Add Total Row
                 XLSX.utils.sheet_add_json(ws, [totalRow], { origin: -1, skipHeader: true });
+
+                // Cell Merges
+                ws['!merges'] = [
+                    { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } }, // Title: A1-H1
+                    { s: { r: 1, c: 0 }, e: { r: 1, c: 7 } }, // Period: A2-H2
+                    { s: { r: 2, c: 0 }, e: { r: 2, c: 3 } }, // Name: A3-D3
+                    { s: { r: 2, c: 4 }, e: { r: 2, c: 7 } }  // Plate: E3-H3
+                ];
 
                 // Column Widths
                 ws['!cols'] = [{ wch: 5 }, { wch: 15 }, { wch: 40 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 20 }];
