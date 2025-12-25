@@ -192,12 +192,16 @@ export function DriverSalaryTable({ tickets, routeConfigs, onNotifySalary }: Dri
             const wb = XLSX.utils.book_new();
 
             salarySheets.forEach(sheet => {
+                // Find License Plate from tickets
+                const drTicket = tickets.find(t => t.driverName === sheet.driverName && t.licensePlate);
+                const plate = drTicket ? drTicket.licensePlate : '...';
+
                 // Prepare Data for Sheet
                 // Header Information
                 const headerRows = [
                     ['BẢNG TỔNG HỢP THANH TOÁN LƯƠNG'],
                     [`Kỳ thanh toán: ${sheet.month}/${sheet.year}`],
-                    [`Họ và tên: ${sheet.driverName}`, '', '', '', `Biển kiểm soát: ...`],
+                    [`Họ và tên: ${sheet.driverName}`, '', '', '', `Biển kiểm soát: ${plate}`],
                     ['', '', '', '', '', '', ''] // Spacer
                 ];
 
