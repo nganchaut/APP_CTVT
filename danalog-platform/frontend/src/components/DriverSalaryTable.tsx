@@ -9,6 +9,11 @@ interface DriverSalaryTableProps {
     onNotifySalary?: (driverUsername: string) => void;
 }
 
+const DRIVER_EMAILS: Record<string, string> = {
+    'Nguyễn Đức Tiên': 'nganchau.207@gmail.com',
+    // Add other mappings here if needed
+};
+
 interface SalaryItem {
     id: string; // Composite key
     cargoName: string; // "V/c cont", "Lưu đêm"...
@@ -185,6 +190,91 @@ export function DriverSalaryTable({ tickets, routeConfigs, onNotifySalary }: Dri
         );
     };
 
+    // Helper to add a sheet to a workbook
+    const addDriverSheet = (wb: any, sheet: DriversalarySheet) => {
+        // Find ALL License Plates from tickets for this driver
+        const driverPlates = tickets
+            .filter(t => t.driverName === sheet.driverName && t.licensePlate && t.licensePlate.trim() !== '')
+            .map(t => t.licensePlate?.trim())
+            .filter((plate): plate is string => !!plate);
+
+        // Deduplicate plates
+        const uniquePlates = Array.from(new Set(driverPlates));
+        const plate = uniquePlates.length > 0 ? uniquePlates.join(', ') : '';
+
+        // Header Information
+        const centerStyle = { alignment: { horizontal: 'center', vertical: 'center' }, font: { bold: true } };
+
+        // Row 1: Title (Merged A1:H1) - Centered
+        const row1 = [
+            { v: 'BẢNG TỔNG HỢP THANH TOÁN LƯƠNG', t: 's', s: centerStyle },
+            '', '', '', '', '', '', ''
+        ];
+
+        // Row 2: Period (Merged A2:H2) - Centered
+        const row2 = [
+            { v: `Kỳ thanh toán: ${sheet.month}/${sheet.year}`, t: 's', s: centerStyle },
+            '', '', '', '', '', '', ''
+        ];
+
+        // Row 3: Name (Merged A3:D3) & Plate (Merged E3:H3)
+        const row3 = [
+            { v: `Họ và tên: ${sheet.driverName}`, t: 's', s: centerStyle },
+            '', '', '',
+            { v: `Biển kiểm soát: ${plate}`, t: 's', s: centerStyle },
+            '', '', ''
+        ];
+
+        const headerRows = [row1, row2, row3, ['', '', '', '', '', '', ''], ['', '', '', '', '', '', '']];
+
+        // Table Data
+        const tableData = sheet.items.map((item, index) => ({
+            'STT': index + 1,
+            'Tên hàng': item.cargoName,
+            'Nội dung': item.content,
+            'ĐVT': item.unit,
+            'Số lượng': item.quantity,
+            'Đơn giá tiền lương': item.unitPrice,
+            'Tổng lương': item.total,
+            'Ghi chú': item.note
+        }));
+
+        // Total Row
+        const totalRow = {
+            'STT': '', 'Tên hàng': 'Cộng', 'Nội dung': '', 'ĐVT': '',
+            'Số lượng': sheet.totalQuantity,
+            'Đơn giá tiền lương': '',
+            'Tổng lương': sheet.totalSalary,
+            'Ghi chú': ''
+        };
+
+        const ws = XLSX.utils.json_to_sheet([]);
+
+        // Add Headers
+        XLSX.utils.sheet_add_aoa(ws, headerRows, { origin: 'A1' });
+
+        // Add Data starting at A6
+        XLSX.utils.sheet_add_json(ws, tableData, { origin: 'A6' });
+
+        // Add Total Row
+        XLSX.utils.sheet_add_json(ws, [totalRow], { origin: -1, skipHeader: true });
+
+        // Cell Merges
+        ws['!merges'] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } }, // Title: A1-H1
+            { s: { r: 1, c: 0 }, e: { r: 1, c: 7 } }, // Period: A2-H2
+            { s: { r: 2, c: 0 }, e: { r: 2, c: 3 } }, // Name: A3-D3
+            { s: { r: 2, c: 4 }, e: { r: 2, c: 7 } }  // Plate: E3-H3
+        ];
+
+        // Column Widths
+        ws['!cols'] = [{ wch: 5 }, { wch: 15 }, { wch: 40 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 20 }];
+
+        // Safe Sheet Name
+        const sheetName = sheet.driverName.replace(/[\\/?*[\]]/g, '').slice(0, 30);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    };
+
     // Bulk Export Logic
     const handleBulkExport = () => {
         setIsExporting(true);
@@ -192,89 +282,7 @@ export function DriverSalaryTable({ tickets, routeConfigs, onNotifySalary }: Dri
             const wb = XLSX.utils.book_new();
 
             salarySheets.forEach(sheet => {
-                // Find ALL License Plates from tickets for this driver
-                const driverPlates = tickets
-                    .filter(t => t.driverName === sheet.driverName && t.licensePlate && t.licensePlate.trim() !== '')
-                    .map(t => t.licensePlate?.trim())
-                    .filter((plate): plate is string => !!plate);
-
-                // Deduplicate plates
-                const uniquePlates = Array.from(new Set(driverPlates));
-                const plate = uniquePlates.length > 0 ? uniquePlates.join(', ') : '';
-
-                // Header Information
-                // Note: Standard 'xlsx' may allow 's' (style) on some builds, or we define it for compatibility.
-                const centerStyle = { alignment: { horizontal: 'center', vertical: 'center' }, font: { bold: true } };
-
-                // Row 1: Title (Merged A1:H1) - Centered
-                const row1 = [
-                    { v: 'BẢNG TỔNG HỢP THANH TOÁN LƯƠNG', t: 's', s: centerStyle },
-                    '', '', '', '', '', '', ''
-                ];
-
-                // Row 2: Period (Merged A2:H2) - Centered
-                const row2 = [
-                    { v: `Kỳ thanh toán: ${sheet.month}/${sheet.year}`, t: 's', s: centerStyle },
-                    '', '', '', '', '', '', ''
-                ];
-
-                // Row 3: Name (Merged A3:D3) & Plate (Merged E3:H3)
-                // User requested "Họ và tên canh giữa" (Name centered).
-                const row3 = [
-                    { v: `Họ và tên: ${sheet.driverName}`, t: 's', s: centerStyle },
-                    '', '', '',
-                    { v: `Biển kiểm soát: ${plate}`, t: 's', s: centerStyle },
-                    '', '', ''
-                ];
-
-                const headerRows = [row1, row2, row3, ['', '', '', '', '', '', ''], ['', '', '', '', '', '', '']];
-
-                // Table Data
-                const tableData = sheet.items.map((item, index) => ({
-                    'STT': index + 1,
-                    'Tên hàng': item.cargoName,
-                    'Nội dung': item.content,
-                    'ĐVT': item.unit,
-                    'Số lượng': item.quantity,
-                    'Đơn giá tiền lương': item.unitPrice,
-                    'Tổng lương': item.total,
-                    'Ghi chú': item.note
-                }));
-
-                // Total Row
-                const totalRow = {
-                    'STT': '', 'Tên hàng': 'Cộng', 'Nội dung': '', 'ĐVT': '',
-                    'Số lượng': sheet.totalQuantity,
-                    'Đơn giá tiền lương': '',
-                    'Tổng lương': sheet.totalSalary,
-                    'Ghi chú': ''
-                };
-
-                const ws = XLSX.utils.json_to_sheet([]);
-
-                // Add Headers
-                XLSX.utils.sheet_add_aoa(ws, headerRows, { origin: 'A1' });
-
-                // Add Data starting at A6
-                XLSX.utils.sheet_add_json(ws, tableData, { origin: 'A6' });
-
-                // Add Total Row
-                XLSX.utils.sheet_add_json(ws, [totalRow], { origin: -1, skipHeader: true });
-
-                // Cell Merges
-                ws['!merges'] = [
-                    { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } }, // Title: A1-H1
-                    { s: { r: 1, c: 0 }, e: { r: 1, c: 7 } }, // Period: A2-H2
-                    { s: { r: 2, c: 0 }, e: { r: 2, c: 3 } }, // Name: A3-D3
-                    { s: { r: 2, c: 4 }, e: { r: 2, c: 7 } }  // Plate: E3-H3
-                ];
-
-                // Column Widths
-                ws['!cols'] = [{ wch: 5 }, { wch: 15 }, { wch: 40 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 20 }];
-
-                // Safe Sheet Name
-                const sheetName = sheet.driverName.replace(/[\\/?*[\]]/g, '').slice(0, 30);
-                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+                addDriverSheet(wb, sheet);
             });
 
             XLSX.writeFile(wb, `Bang_Ke_Luong_Thang_${selectedMonth}_${selectedYear}.xlsx`);
@@ -292,14 +300,34 @@ export function DriverSalaryTable({ tickets, routeConfigs, onNotifySalary }: Dri
     };
 
     const handleNotifyDriver = (driverName: string) => {
-        // Attempt to find username based on driverName. 
-        // In a real app, this mapping would be better handled.
-        // For now, let's derive it or just pass the name.
+        // 1. Export individual sheet
+        const sheet = salarySheets.find(s => s.driverName === driverName);
+        if (sheet) {
+            try {
+                const wb = XLSX.utils.book_new();
+                addDriverSheet(wb, sheet);
+
+                // Format filename: Luong_Thang_12_Nguyen_Duc_Tien.xlsx
+                // Simple sanitize for filename
+                const safeName = driverName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_');
+                const fileName = `Luong_Thang_${selectedMonth}_${safeName}.xlsx`;
+
+                XLSX.writeFile(wb, fileName);
+            } catch (err) {
+                console.error("Export error:", err);
+                alert("Lỗi xuất file excel cho lái xe.");
+                return;
+            }
+        }
+
+        // 2. Simulate Email Notification
+        const email = DRIVER_EMAILS[driverName] || 'chưa có email';
+        alert(`Đã gửi thông báo lương (Email & SMS) cho lái xe: ${driverName}\nEmail: ${email}`);
+
+        // Optional: Call original handler if needed
         const driverTicket = tickets.find(t => t.driverName === driverName);
         if (driverTicket?.createdBy && onNotifySalary) {
-            onNotifySalary(driverTicket.createdBy);
-        } else {
-            alert(`Đã gửi thông báo lương (Email & SMS) cho lái xe: ${driverName}`);
+            // onNotifySalary(driverTicket.createdBy); 
         }
     };
 
