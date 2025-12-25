@@ -7,7 +7,7 @@ import { HistoryModal } from './HistoryModal';
 
 import { RouteConfig } from '../types';
 
-export function TicketList({ tickets, onUpdateTickets, routeConfigs, currentUser }: { tickets: TransportTicket[], onUpdateTickets: (t: TransportTicket[]) => void, routeConfigs: RouteConfig[], currentUser?: any }) {
+export function TicketList({ tickets, onUpdateTickets, onUpdateTicket, routeConfigs, currentUser }: { tickets: TransportTicket[], onUpdateTickets: (t: TransportTicket[]) => void, onUpdateTicket?: (t: TransportTicket) => void, routeConfigs: RouteConfig[], currentUser?: any }) {
     const [editingTicket, setEditingTicket] = useState<TransportTicket | null>(null);
     const [viewingHistoryTicket, setViewingHistoryTicket] = useState<TransportTicket | null>(null);
 
@@ -88,7 +88,12 @@ export function TicketList({ tickets, onUpdateTickets, routeConfigs, currentUser
             statusHistory: [initialApprovedLog, ...(ticket.statusHistory || [])]
         };
 
-        onUpdateTickets(tickets.map(t => t.id === id ? intermediateTicket : t));
+        if (onUpdateTicket) {
+            onUpdateTicket(intermediateTicket);
+        } else {
+            // Fallback to bulk update (legacy)
+            onUpdateTickets(tickets.map(t => t.id === id ? intermediateTicket : t));
+        }
     };
 
     const handleEdit = (ticket: TransportTicket) => {
@@ -108,7 +113,11 @@ export function TicketList({ tickets, onUpdateTickets, routeConfigs, currentUser
             statusHistory: [editLog, ...(updatedTicket.statusHistory || [])]
         };
 
-        onUpdateTickets(tickets.map(t => t.id === finalTicket.id ? finalTicket : t));
+        if (onUpdateTicket) {
+            onUpdateTicket(finalTicket);
+        } else {
+            onUpdateTickets(tickets.map(t => t.id === finalTicket.id ? finalTicket : t));
+        }
         setEditingTicket(null);
     };
 

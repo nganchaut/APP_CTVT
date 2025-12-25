@@ -89,6 +89,18 @@ function AppContent() {
         await api.saveTickets(updatedTickets);
     };
 
+    const handleUpdateSingleTicket = async (updatedTicket: any) => {
+        // Optimistic update
+        setTickets(prev => prev.map(t => t.id === updatedTicket.id ? updatedTicket : t));
+        try {
+            await api.updateTicket(updatedTicket.id, updatedTicket);
+        } catch (error) {
+            console.error("Failed to update ticket", error);
+            alert("Lỗi cập nhật phiếu. Vui lòng thử lại.");
+            // Revert could be added here if needed
+        }
+    };
+
     const handleCreateTicket = async (newTicket: any) => {
         // Optimistic update
         setTickets(prev => [newTicket, ...prev]);
@@ -165,7 +177,7 @@ function AppContent() {
     const renderContent = () => {
         switch (activeTab) {
             case 'cs_check':
-                return <TicketList tickets={tickets} onUpdateTickets={handleUpdateTickets} routeConfigs={routeConfigs} currentUser={user} />;
+                return <TicketList tickets={tickets} onUpdateTickets={handleUpdateTickets} onUpdateTicket={handleUpdateSingleTicket} routeConfigs={routeConfigs} currentUser={user} />;
             case 'revenue_driver':
                 return <DriverRevenueTable tickets={tickets} />;
             case 'revenue_customer':
