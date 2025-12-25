@@ -12,7 +12,8 @@ const DATA_DIR = path.join(__dirname, 'src', 'data');
 const SEED_FILE = path.join(DATA_DIR, 'seedTickets.json');
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'dist')));
