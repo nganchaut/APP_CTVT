@@ -11,7 +11,26 @@ interface TicketListMobileProps {
     onCreateNew: () => void;
 }
 
-export const TicketListMobile: React.FC<TicketListMobileProps> = ({ tickets, onUpdateTickets, routeConfigs, onCreateNew }) => {
+const DetailRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+    <div className="flex justify-between items-start py-3.5 border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
+        <span className="text-xs text-slate-400 font-medium shrink-0 pt-0.5">{label}</span>
+        <span className="text-xs text-slate-700 font-bold text-right flex-1 ml-4 break-words">{value}</span>
+    </div>
+);
+
+const FilterBtn: React.FC<{ label: string; active: boolean; onClick: () => void }> = ({ label, active, onClick }) => (
+    <button
+        onClick={onClick}
+        className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border transition-all ${active
+            ? 'bg-blue-600 text-white border-blue-600'
+            : 'bg-white text-slate-500 border-slate-100'
+            }`}
+    >
+        {label}
+    </button>
+);
+
+export const TicketListMobile: React.FC<TicketListMobileProps> = ({ tickets = [], onUpdateTickets, routeConfigs, onCreateNew }) => {
     const { user } = useAuth();
 
     const [filterStatus, setFilterStatus] = useState<'ALL' | 'DRAFT' | 'PENDING' | 'APPROVED'>('ALL');
@@ -297,21 +316,4 @@ export const TicketListMobile: React.FC<TicketListMobileProps> = ({ tickets, onU
     );
 };
 
-const DetailRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-    <div className="flex justify-between items-start py-3.5 border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
-        <span className="text-xs text-slate-400 font-medium shrink-0 pt-0.5">{label}</span>
-        <span className="text-xs text-slate-700 font-bold text-right flex-1 ml-4 break-words">{value}</span>
-    </div>
-);
 
-const FilterBtn: React.FC<{ label: string; active: boolean; onClick: () => void }> = ({ label, active, onClick }) => (
-    <button
-        onClick={onClick}
-        className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border transition-all ${active
-            ? 'bg-blue-600 text-white border-blue-600'
-            : 'bg-white text-slate-500 border-slate-100'
-            }`}
-    >
-        {label}
-    </button>
-);

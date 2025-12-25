@@ -80,7 +80,7 @@ export function DriverRevenueTable({ tickets }: { tickets: TransportTicket[] }) 
             // Map data
             const rows = driverTickets.map((t, idx) => ({
                 'STT': idx + 1,
-                'Ngày': format(new Date(t.dateStart), 'dd/MM/yy'),
+                'Ngày': t.dateStart ? format(new Date(t.dateStart), 'dd/MM/yy') : '-',
                 'Container No.': t.containerNo,
                 'Size': t.size,
                 'S/C': t.trips || 1,
@@ -223,14 +223,14 @@ export function DriverRevenueTable({ tickets }: { tickets: TransportTicket[] }) 
                                 filteredTickets.map((ticket, index) => (
                                     <tr key={ticket.id} className="hover:bg-blue-50/30 transition-colors">
                                         <td className="px-6 py-4 text-center text-slate-400 font-medium">{index + 1}</td>
-                                        <td className="px-6 py-4 text-slate-600">{format(new Date(ticket.dateStart), 'dd/MM/yy')}</td>
+                                        <td className="px-6 py-4 text-slate-600">{ticket.dateStart ? format(new Date(ticket.dateStart), 'dd/MM/yy') : '-'}</td>
                                         <td className="px-6 py-4 font-mono text-slate-600">{ticket.containerNo}</td>
                                         <td className="px-6 py-4 text-center text-slate-600">{ticket.size}</td>
                                         <td className="px-6 py-4 text-center text-slate-600">{ticket.trips || 1}</td>
                                         <td className={`px-6 py-4 text-center font-bold ${ticket.fe === 'F' ? 'text-blue-600' : 'text-orange-600'}`}>{ticket.fe}</td>
                                         <td className="px-6 py-4 text-slate-600 max-w-xs truncate" title={ticket.route}>{ticket.route}</td>
-                                        <td className="px-6 py-4 text-right font-medium text-slate-600">{ticket.revenue?.toLocaleString()}</td>
-                                        <td className="px-6 py-4 text-right font-medium text-slate-600">{ticket.revenue?.toLocaleString()}</td>
+                                        <td className="px-6 py-4 text-right font-medium text-slate-600">{(ticket.revenue || 0).toLocaleString()}</td>
+                                        <td className="px-6 py-4 text-right font-medium text-slate-600">{(ticket.revenue || 0).toLocaleString()}</td>
                                         <td className="px-6 py-4 text-center">
                                             {ticket.nightStay && (
                                                 <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-50 text-purple-700 font-bold text-xs ring-1 ring-purple-100">

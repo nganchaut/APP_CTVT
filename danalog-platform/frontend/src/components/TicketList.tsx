@@ -221,7 +221,7 @@ export function TicketList({ tickets, onUpdateTickets, routeConfigs, currentUser
                                     <td className="px-6 py-4 text-center text-slate-400 font-medium">{(currentPage - 1) * PAGE_SIZE + index + 1}</td>
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col">
-                                            <span className="font-medium text-slate-700">{format(new Date(ticket.dateStart), 'dd/MM/yy')}</span>
+                                            <span className="font-medium text-slate-700">{ticket.dateStart ? format(new Date(ticket.dateStart), 'dd/MM/yy') : '-'}</span>
                                             {ticket.dateEnd !== ticket.dateStart && (
                                                 <span className="text-xs text-slate-400">→ {format(new Date(ticket.dateEnd), 'dd/MM')}</span>
                                             )}
@@ -259,7 +259,7 @@ export function TicketList({ tickets, onUpdateTickets, routeConfigs, currentUser
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right font-bold text-emerald-600">
-                                        {ticket.revenue.toLocaleString()} ₫
+                                        {(ticket.revenue || 0).toLocaleString()} ₫
                                     </td>
                                     <td className="px-6 py-4 text-center font-medium text-slate-600">
                                         {ticket.nightStay ? (ticket.nightStayDays || 'Có') : '-'}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from './services/api'
-import { Settings, LogOut, ChevronDown, ChevronRight, Users, Map as MapIcon, RefreshCw } from 'lucide-react'
+import { Settings, LogOut, ChevronDown, ChevronRight, Users, Map as MapIcon } from 'lucide-react'
 import { TicketList } from './components/TicketList'
 import { DriverRevenueTable } from './components/DriverRevenueTable'
 import { CustomerRevenueTable } from './components/CustomerRevenueTable'
@@ -45,8 +45,13 @@ function AppContent() {
     }, []);
 
     const [routeConfigs, setRouteConfigs] = useState<any[]>(() => {
-        const saved = localStorage.getItem('danalog_route_configs');
-        return saved ? JSON.parse(saved) : MOCK_ROUTES_CONFIG;
+        try {
+            const saved = localStorage.getItem('danalog_route_configs');
+            return saved ? JSON.parse(saved) : MOCK_ROUTES_CONFIG;
+        } catch (e) {
+            console.error("Failed to parse route configs", e);
+            return MOCK_ROUTES_CONFIG;
+        }
     });
 
     // Persist changes
