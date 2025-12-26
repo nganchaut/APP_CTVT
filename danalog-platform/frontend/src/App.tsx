@@ -8,7 +8,7 @@ import { RouteConfigList } from './components/RouteConfigList'
 import { DriverSalaryTable } from './components/DriverSalaryTable'
 import { LoginPage } from './components/LoginPage'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
-import { MOCK_TICKETS, MOCK_ROUTES_CONFIG } from './types'
+import { MOCK_ROUTES_CONFIG } from './types'
 import { MobileDriverDashboard } from './components/mobile/MobileDriverDashboard'
 
 
