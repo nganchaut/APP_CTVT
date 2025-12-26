@@ -1,16 +1,23 @@
 
-import { spawn } from 'child_process';
+import handler from 'serve-handler';
+import http from 'http';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const port = process.env.PORT || 3000;
-const cmd = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-console.log(`Starting server on port ${port}...`);
-
-const serve = spawn(cmd, ['serve', '-s', 'dist', '-l', String(port)], {
-    stdio: 'inherit',
-    shell: true
+const server = http.createServer((request, response) => {
+    return handler(request, response, {
+        public: path.join(__dirname, 'dist'),
+        // Optional: configuration
+        rewrites: [
+            { source: "**", destination: "/index.html" } // SPA fallback
+        ]
+    });
 });
 
-serve.on('close', (code) => {
-    process.exit(code);
+const port = process.env.PORT || 3000;
+
+server.listen(port, () => {
+    console.log('Running at http://localhost:' + port);
 });
