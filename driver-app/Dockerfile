@@ -7,11 +7,14 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies (production only)
-RUN npm install --production
+# Install dependencies (including devDependencies for build)
+RUN npm install
 
 # Copy source code
 COPY . .
+
+# Build the frontend
+RUN npm run build
 
 # Expose port
 EXPOSE 3001
