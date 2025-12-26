@@ -108,7 +108,7 @@ export const CreateTicketMobile: React.FC<CreateTicketMobileProps> = ({
                 }));
             } catch (error) {
                 console.error("Compression failed", error);
-                alert("Không thể xử lý ảnh này (Có thể do thiếu bộ nhớ). Vui lòng chụp lại hoặc chọn ảnh khác nhỏ hơn.");
+                alert("Lỗi xử lý ảnh. Vui lòng thử lại.");
             }
         }
     };
@@ -433,7 +433,6 @@ export const CreateTicketMobile: React.FC<CreateTicketMobileProps> = ({
                                     type="file"
                                     ref={fileInputRef}
                                     accept="image/*"
-                                    // capture="environment" // Optional: Forces back camera on mobile
                                     onChange={handleFileChange}
                                     className="hidden"
                                 />

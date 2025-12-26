@@ -18,8 +18,8 @@ export const compressImage = (file: File): Promise<string> => {
             let width = img.width;
             let height = img.height;
 
-            // Max width/height to 1600 (Higher quality as requested)
-            const MAX_dimension = 1600;
+            // Max width/height to 1024 while maintaining aspect ratio
+            const MAX_dimension = 1024;
             if (width > height) {
                 if (width > MAX_dimension) {
                     height *= MAX_dimension / width;

@@ -8,7 +8,7 @@ import { RouteConfigList } from './components/RouteConfigList'
 import { DriverSalaryTable } from './components/DriverSalaryTable'
 import { LoginPage } from './components/LoginPage'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
-import { MOCK_ROUTES_CONFIG } from './types'
+import { MOCK_TICKETS, MOCK_ROUTES_CONFIG } from './types'
 import { MobileDriverDashboard } from './components/mobile/MobileDriverDashboard'
 
 
@@ -45,18 +45,11 @@ function AppContent() {
     // Fetch tickets on mount
     useEffect(() => {
         const fetchTickets = async () => {
-            try {
-                const data = await api.getTickets();
-                // If data is array, use it (even if empty). Do NOT fallback to MOCK if empty.
-                if (Array.isArray(data)) {
-                    setTickets(data);
-                } else {
-                    setTickets([]);
-                }
-            } catch (error) {
-                console.error("Failed to fetch tickets", error);
-                // Only on explicit error might we consider mock, or just show empty with error
-                setTickets([]);
+            const data = await api.getTickets();
+            if (data && data.length > 0) {
+                setTickets(data);
+            } else {
+                setTickets(MOCK_TICKETS); // Fallback if API fails or empty
             }
         };
         fetchTickets();
