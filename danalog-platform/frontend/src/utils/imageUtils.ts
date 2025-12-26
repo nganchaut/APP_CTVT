@@ -18,8 +18,8 @@ export const compressImage = (file: File): Promise<string> => {
             let width = img.width;
             let height = img.height;
 
-            // Max width/height to 1600 (Higher quality as requested)
-            const MAX_dimension = 1600;
+            // Max width/height to 1280 (Balanced for iOS & Quality)
+            const MAX_dimension = 1280;
             if (width > height) {
                 if (width > MAX_dimension) {
                     height *= MAX_dimension / width;
@@ -43,9 +43,8 @@ export const compressImage = (file: File): Promise<string> => {
             // Draw image to canvas
             ctx.drawImage(img, 0, 0, width, height);
 
-            // Compress to JPEG 0.7
-            // logic: quality 0.7 is usually good enough for mobile photos
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+            // Compress to JPEG 0.8 (Requested larger capacity)
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
             resolve(dataUrl);
         };
 
