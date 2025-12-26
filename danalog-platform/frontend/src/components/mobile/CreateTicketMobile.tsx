@@ -433,7 +433,7 @@ export const CreateTicketMobile: React.FC<CreateTicketMobileProps> = ({
                                     type="file"
                                     ref={fileInputRef}
                                     accept="image/*"
-                                    capture="environment" // Forces back camera on mobile
+                                    // capture="environment" // Optional: Forces back camera on mobile
                                     onChange={handleFileChange}
                                     className="hidden"
                                 />

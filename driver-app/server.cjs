@@ -1,3 +1,4 @@
+
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -11,8 +12,8 @@ const DATA_DIR = path.join(__dirname, 'src', 'data');
 const SEED_FILE = path.join(DATA_DIR, 'seedTickets.json');
 
 app.use(cors());
-app.use(bodyParser.json({ limit: '100mb' }));
-app.use(bodyParser.urlencoded({ limit: '100mb', extended: true }));
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'dist')));
@@ -20,6 +21,8 @@ app.use(express.static(path.join(__dirname, 'dist')));
 app.get('/', (req, res) => {
     res.send('Backend Server is Running correctly!');
 });
+
+// ... (API Routes helper functions)
 
 // Helper to read DB
 function readDb() {
@@ -56,7 +59,7 @@ app.post('/api/tickets', (req, res) => {
         const db = readDb();
         const newTicket = req.body;
 
-        // If body is an array, we assume it's a bulk/sync update
+        // If body is an array, we assume it's a bulk/sync update (less common but supported)
         if (Array.isArray(newTicket)) {
             db.tickets = newTicket;
         } else {
